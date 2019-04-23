@@ -110,9 +110,14 @@
             if (dictParam[1]=="1") {list += readTextFile("words/words8k.txt");}
             if (dictParam[2]=="1") {list += readTextFile("words/words100k.txt");}
             list = list.split("\n");
+            // remove carriage return
+            for (var i=0; i<list.length; i++) {
+                if (list[i].slice(-1)=="\r")
+                    list[i] = list[i].substring(0, list[i].length - 1);
+            }
             list.sort(function(a, b) {
-                return b.length - a.length || // sort by length, if equal then
-                a.localeCompare(b); // sort by dictionary order
+                return b.length-a.length || // sort by length, if equal then
+                a.localeCompare(b); // sort by alphabetical order
             });
             // remove duplicates
             var dictionary=[];
@@ -146,8 +151,6 @@
 
         // returns whether word is contained in input
         function contains(word, input) {
-            // remove carriage return
-            word = word.replace('\r','');
             // if word has more letters, return false
             if (word.length > input.length) {
                 return false;
@@ -190,7 +193,7 @@
             }
             return str; // return original
         }
-        
+
         </script>
         <style>
             body {
