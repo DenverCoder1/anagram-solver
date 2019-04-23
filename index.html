@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Anagram Solver</title>
+        <script type="text/javascript">
+        function readTextFile(file) {
+            var dictionary = "";
+            var rawFile = new XMLHttpRequest();
+            rawFile.open("GET", file, false);
+            rawFile.onreadystatechange = function () {
+                if(rawFile.readyState === 4) {
+                    if(rawFile.status === 200 || rawFile.status == 0) {
+                        dictionary = rawFile.responseText;
+                    }
+                }
+            }
+            rawFile.send(null);
+            return dictionary;
+        }
+
+        function updateVars(btn) {
+            var remove = ""; // clear remove if 'Go!'
+            if (btn == 1) { // update remove if 'Update'
+                remove = document.getElementById("remove").value;
+            }
+            var letters = document.getElementById("letters").value;
+            newURL = setGetParameter("letters",letters,window.location.href);
+            window.location.href = setGetParameter("remove",remove,newURL);
+        }
+
+        function changeDictionary(dict) {
+            if (typeof getUrlVars()["dict"] == 'undefined') {
+                paramVal = "000".split("");
+            }
+            else {paramVal = getUrlVars()["dict"].split("");}
+            paramVal[dict] = "" + (1 - parseInt(paramVal[dict]));
+            paramVal = paramVal.join("");
+            window.location.href = setGetParameter("dict",paramVal,window.location.href);
+        }
+
+        function loadUrlVars() {
+            var lettersParam = getUrlVars()["letters"];
+            var removeParam = getUrlVars()["remove"];
+            var dictParam = getUrlVars()["dict"];
+            if (typeof lettersParam != 'undefined') {
+                document.getElementById('letters').value = lettersParam;
+            }
+            if (typeof removeParam != 'undefined') {
+                document.getElementById('remove').value = removeParam;
+            }
+            if (typeof dictParam != 'undefined') {
+                if (dictParam[0]=="1") {
+                    document.getElementById('dictionary1').checked=true;
+                }
+                if (dictParam[1]=="1") {
+                    document.getElementById('dictionary2').checked=true;
+                }
+                if (dictParam[2]=="1") {
+                    document.getElementById('dictionary3').checked=true;
+                }
+            }
+            else {
+                document.getElementById('dictionary1').checked=true;
+                window.location.href = setGetParameter("dict","100",window.location.href);
+            }
+            if (typeof lettersParam != 'undefined') {
+                solveAnagram();
+            }
+
+        }
+
+        function getUrlVars() {
+            var vars = {};
+            var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+                    vars[key] = decodeURIComponent(value);
+            });
+            return vars;
+        }
+         
+         function setGetParameter(a,b,c){
+            var d=location.hash;if(c=c.replace(d,""),c.indexOf("?")>=0){var e=c.substring(c.indexOf("?")+1).split("&"),f=!1;e.forEach(function(c,d){c.split("=")[0]==a&&(e[d]=a+"="+encodeURIComponent(b),f=!0)}),f||e.push(a+"="+encodeURIComponent(b)),c=c.substring(0,c.indexOf("?")+1)+e.join("&")}else c+="?"+a+"="+encodeURIComponent(b);return c+d
+         }
+
+         function del(word) {
+            document.getElementById("remove").value = (document.getElementById("remove").value + " " + word).trim();
+            updateVars(1);
+        }
+
+        function solveAnagram() {
+            var input = document.getElementById("letters").value.toUpperCase().replace(/[^A-Z\*]/g,"").split('').sort().join('');
+            var remove = document.getElementById("remove").value.toUpperCase().replace(/[^A-Z\*]/g,"");
+            var errors = "";
+            for (var i = 0; i < remove.length; i++) {
+                if (input == (input = input.replace(remove[i],""))) {
+                    errors += remove[i]+" is missing.\n";
+                }
+            }
+            document.getElementById("errors").style.display = "none";
+            if (errors != "") {
+                document.getElementById("errors").style.display = "inline-block";
+                document.getElementById("errors").innerText = "Warning: Remove list contains letters not in anagram.\n"+errors;
+            }
+            // load word lists
+            var dictParam = getUrlVars()["dict"];
+            var list = "";
+            if (dictParam[0]=="1") {list += readTextFile("hpwords.txt");}
+            if (dictParam[1]=="1") {list += readTextFile("words8k.txt");}
+            if (dictParam[2]=="1") {list += readTextFile("words100k.txt");}
+            list = list.split("\n");
+            list.sort(function(a, b) {
+                return b.length - a.length || // sort by length, if equal then
+                a.localeCompare(b); // sort by dictionary order
+            });
+            // remove duplicates
+            var dictionary=[];
+            for(var i=0,len=list.length-1;i<len;i++){
+                // if adjacent elements are not the same, push element
+                if(list[i]!==list[i+1]){
+                    dictionary.push(list[i]);
+                }
+            }
+            dictionary.push(list[i]); // put last element into array
+            // start finding anagrams
+            var numWords = dictionary.length;
+            var result = "";
+            var wordsFound = 0;
+            for (var i = 0; i < numWords; i++) {
+                if(contains(dictionary[i],input)) {
+                    result += "<a href='javascript:del(\""+dictionary[i]+"\");'>" + dictionary[i] + "</a><br/>";
+                    ++wordsFound;
+                }
+            }
+            // output results
+            document.getElementById("search").innerText = "Letters: "+input+"\n"+"Number of letters: "+input.length+", Words found: "+wordsFound;
+            document.getElementById("results").innerHTML = result;
+        }
+
+        function contains(word, input) {
+            // remove carriage return
+            word = word.replace('\r','');
+            // if word has more letters, return false
+            if (word.length > input.length) {
+                return false;
+            }
+            while(word.length > 0) {
+                // remove first occurance of current letter from input
+                // if it is now different, letter is available
+                if (input != (input = input.replace(word[0], ''))) {
+                    // remove first letter
+                    word = word.substr(1);
+                }
+                // check for '*' wildcard instead
+                else if (input != (input = input.replace('*',''))) {
+                    // remove first letter
+                    word = word.substr(1);
+                }
+                else {
+                    // missing letter, not an anagram
+                    return false;
+                }
+            }
+            return true;
+        }
+        </script>
+        <style>
+            body {
+                margin: 0;
+                font-family: Lato, Roboto, Arial, sans-serif;
+                font-size: 14px;
+                line-height: 22px;
+                color: #c5c5c5;
+                background-color: #111111;
+            }
+            a {
+                color: #a8cbf1;
+                text-decoration: none;
+            }
+            a:hover {
+                color: #d3e7fd;
+                text-decoration: underline;
+            }
+            div#form {
+                margin-left: 1.5em;
+            }
+            div#errors {
+                margin: 1em 0 0 1em;
+                color: #ff7171;
+                border: 2px solid #ff7171;
+                padding: 10px;
+                width: auto;
+                display: none;
+            }
+            div#search {
+                margin: 3em 0 0 1em;
+            }
+            div#results {
+                margin: 3em 1em;
+            }
+            @media screen and (min-width: 420px) {
+                div#results {
+                    -webkit-column-count: 2; /* Chrome, Safari, Opera */
+                    -moz-column-count: 2; /* Firefox */
+                    column-count: 2;
+                }
+            }
+            @media screen and (min-width: 620px) {
+                div#form-container {
+                    margin-left: 5em;
+                }
+                div#results {
+                    -webkit-column-count: 3; /* Chrome, Safari, Opera */
+                    -moz-column-count: 3; /* Firefox */
+                    column-count: 3;
+                }
+                .cb {
+                    display: inline;
+                }
+            }
+            @media screen and (min-width: 900px) {
+                div#results {
+                    -webkit-column-count: 5; /* Chrome, Safari, Opera */
+                    -moz-column-count: 5; /* Firefox */
+                    column-count: 5;
+                }
+            }
+            input[type=radio],input[type=checkbox],input[type=text] {
+                margin:0px 0px 8px 10px;
+            }
+            input[type="text"], button {
+                padding: 6px 11px;
+                font-size: 120%;
+                color: #fff;
+                transition: 0.3s;
+            }
+            input[type="text"] {
+                border-style: ridge;
+                border: none;
+                border-bottom: 2px solid #666;
+                background: #111;
+                border-radius: 0;
+            }
+            button {
+                background: #222;
+                border: 2px solid #666;
+                margin-left: 8px;
+            }
+            button:hover {
+                background: #333;
+                border-color: #777;
+            }
+            input[type="text"]:focus, button:focus {
+                outline: none;
+                border-color: #c5c5c5;
+            }
+            #title {
+                margin-left:10px;
+                margin-top:3em;
+                line-height: 32px;
+                color: #00c587;
+            }
+            label.inputlabel {
+                margin-left: 10px;
+                font-size: 116%;
+                display: inline-block;
+                width: 60px;
+            }
+        </style>
+
+    </head>
+    <body>
+        <div id="form">
+            <h1 id="title">Eyl's Anagram Solver</h1>
+
+            <label class="inputlabel">Letters:</label>
+            <input id="letters" type="text" placeholder="letters to anagram">
+            <button onclick="updateVars(0);">Go!</button>
+
+            <br/>
+
+            <label class="inputlabel">Remove:</label>
+            <input id="remove" type="text" placeholder="words selected">
+            <button onclick="updateVars(1);">Update</button>
+
+            <div style="margin-top:10px;">
+                <div class="cb"><input type="checkbox" id="dictionary1" name="dictionary" onclick="changeDictionary(0)"> Harry Potter Words</div>
+
+                <div class="cb"><input type="checkbox" id="dictionary2" name="dictionary" onclick="changeDictionary(1)"> English Words (8,000+)</div>
+
+                <div class="cb"><input type="checkbox" id="dictionary3" name="dictionary" onclick="changeDictionary(2)"> English words (100,000+)</div>
+            </div>
+            <div id="errors"></div>
+            <div id="search"></div>
+            <div id="results"></div>
+        </div>
+    </body>
+    <script>
+    document.getElementById('letters').onkeypress = function(e) {
+        var event = e || window.event;
+        var charCode = event.which || event.keyCode;
+        if ( charCode == '13' ) {
+          updateVars(0);
+          return false;
+        }
+    }
+
+    document.getElementById('remove').onkeypress = function(e) {
+        var event = e || window.event;
+        var charCode = event.which || event.keyCode;
+        if ( charCode == '13' ) {
+          updateVars(1);
+          return false;
+        }
+    }
+
+    window.onload = loadUrlVars;
+    </script>
+</html>
