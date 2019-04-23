@@ -144,6 +144,7 @@
             r.style.columns = longestWord+"px 6";
         }
 
+        // returns whether word is contained in input
         function contains(word, input) {
             // remove carriage return
             word = word.replace('\r','');
@@ -154,12 +155,12 @@
             while(word.length > 0) {
                 // remove first occurance of current letter from input
                 // if it is now different, letter is available
-                if (input != (input = input.replace(word[0], ''))) {
+                if (input != (input = binaryReplace(input, word[0]))) {
                     // remove first letter
                     word = word.substr(1);
                 }
                 // check for '*' wildcard instead
-                else if (input != (input = input.replace('*',''))) {
+                else if (input != (input = binaryReplace(input, "*"))) {
                     // remove first letter
                     word = word.substr(1);
                 }
@@ -170,6 +171,26 @@
             }
             return true;
         }
+
+        // remove x from sorted string str
+        function binaryReplace(str, x) {
+            var start=0, end=str.length-1; 
+            // Iterate while start not meets end 
+            while (start<=end){ 
+                // Find the mid index 
+                let mid=Math.floor((start + end)/2); 
+                // If element is present at mid, remove mid and return str
+                if (str[mid]==x)
+                    return str.slice(0, mid) + str.slice(mid+1);
+                // Else look in left or right half accordingly 
+                else if (str[mid] < x)  
+                     start = mid + 1; 
+                else
+                     end = mid - 1; 
+            }
+            return str; // return original
+        }
+        
         </script>
         <style>
             body {
