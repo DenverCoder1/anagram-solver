@@ -106,9 +106,9 @@
             // load word lists
             var dictParam = getUrlVars()["dict"];
             var list = "";
-            if (dictParam[0]=="1") {list += readTextFile("hpwords.txt");}
-            if (dictParam[1]=="1") {list += readTextFile("words8k.txt");}
-            if (dictParam[2]=="1") {list += readTextFile("words100k.txt");}
+            if (dictParam[0]=="1") {list += readTextFile("words/hpwords.txt");}
+            if (dictParam[1]=="1") {list += readTextFile("words/words8k.txt");}
+            if (dictParam[2]=="1") {list += readTextFile("words/words100k.txt");}
             list = list.split("\n");
             list.sort(function(a, b) {
                 return b.length - a.length || // sort by length, if equal then
@@ -135,7 +135,13 @@
             }
             // output results
             document.getElementById("search").innerText = "Letters: "+input+"\n"+"Number of letters: "+input.length+", Words found: "+wordsFound;
-            document.getElementById("results").innerHTML = result;
+            var r = document.getElementById("results");
+            r.innerHTML = result;
+            // resize columns to fit contents
+            var longestWord = r.getElementsByTagName("A")[0].offsetWidth+15;
+            r.style.WebkitColumns = longestWord+"px 6";
+            r.style.MozColumns = longestWord+"px 6";
+            r.style.columns = longestWord+"px 6";
         }
 
         function contains(word, input) {
@@ -169,8 +175,8 @@
             body {
                 margin: 0;
                 font-family: Lato, Roboto, Arial, sans-serif;
-                font-size: 14px;
-                line-height: 22px;
+                font-size: 15px;
+                line-height: 24px;
                 color: #c5c5c5;
                 background-color: #111111;
             }
@@ -198,32 +204,24 @@
             }
             div#results {
                 margin: 3em 1em;
+                font-size: 130%;
+                line-height: 28px;
+                -webkit-columns: 310px 5; /* Chrome, Safari, Opera */
+                -moz-columns: 310px 5; /* Firefox */
+                columns: 310px 5;
             }
-            @media screen and (min-width: 420px) {
+            @media screen and (min-width: 480px) {
                 div#results {
-                    -webkit-column-count: 2; /* Chrome, Safari, Opera */
-                    -moz-column-count: 2; /* Firefox */
-                    column-count: 2;
+                    font-size: 125%;
+                    line-height: 26px;
                 }
             }
-            @media screen and (min-width: 620px) {
+            @media screen and (min-width: 680px) {
                 div#form-container {
                     margin-left: 5em;
                 }
-                div#results {
-                    -webkit-column-count: 3; /* Chrome, Safari, Opera */
-                    -moz-column-count: 3; /* Firefox */
-                    column-count: 3;
-                }
                 .cb {
                     display: inline;
-                }
-            }
-            @media screen and (min-width: 900px) {
-                div#results {
-                    -webkit-column-count: 5; /* Chrome, Safari, Opera */
-                    -moz-column-count: 5; /* Firefox */
-                    column-count: 5;
                 }
             }
             input[type=radio],input[type=checkbox],input[type=text] {
@@ -246,6 +244,7 @@
                 background: #222;
                 border: 2px solid #666;
                 margin-left: 8px;
+                margin-bottom: 10px;
             }
             button:hover {
                 background: #333;
@@ -266,6 +265,17 @@
                 font-size: 116%;
                 display: inline-block;
                 width: 60px;
+            }
+            @media screen and (max-width: 440px) {
+                label.inputlabel {
+                    display: block;
+                    margin-bottom: 3px;
+                    margin-top: 5px;
+                }
+                button {
+                    width: 100px;
+                    margin-right: 10px;
+                }
             }
         </style>
 
