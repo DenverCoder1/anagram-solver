@@ -105,36 +105,34 @@
             }
             // load word lists
             var dictParam = getUrlVars()["dict"];
-            var list = "";
-            if (dictParam[0]=="1") {list += readTextFile("words/hpwords.txt");}
-            if (dictParam[1]=="1") {list += readTextFile("words/words8k.txt");}
-            if (dictParam[2]=="1") {list += readTextFile("words/words100k.txt");}
-            list = list.split("\n");
-            // remove carriage return
-            for (var i=0; i<list.length; i++) {
-                if (list[i].slice(-1)=="\r")
-                    list[i] = list[i].substring(0, list[i].length - 1);
-            }
-            list.sort(function(a, b) {
-                return b.length-a.length || // sort by length, if equal then
-                a.localeCompare(b); // sort by alphabetical order
+            var jsonText = '{"words": [';
+            if (dictParam[0]=="1") {jsonText += readTextFile("words/hpDictionary.txt");}
+            if (dictParam[1]=="1") {jsonText += readTextFile("words/words8kDictionary.txt");}
+            if (dictParam[2]=="1") {jsonText += readTextFile("words/words100kDictionary.txt");}
+            jsonText = jsonText.substring(0, jsonText.length - 1);
+            jsonText += ']}';
+            var list = JSON.parse(jsonText);
+            list["words"].sort(function(a, b) {
+                return b["letters"].length-a["letters"].length || // sort by length, if equal then
+                (a["letters"]).localeCompare(b["letters"]); // sort by alphabetical order
             });
             // remove duplicates
-            var dictionary=[];
-            for(var i=0,len=list.length-1;i<len;i++){
+            var dictionary = {"words": []};
+            for(var i=0,len=list["words"].length-1;i<len;i++){
                 // if adjacent elements are not the same, push element
-                if(list[i]!==list[i+1]){
-                    dictionary.push(list[i]);
+                if(list["words"][i]["letters"]!==list["words"][i+1]["letters"]){
+                    dictionary["words"].push(list["words"][i]);
                 }
             }
-            dictionary.push(list[i]); // put last element into array
+            dictionary["words"].push(list["words"][i]); // put last element into array
+            gd = dictionary;
             // start finding anagrams
-            var numWords = dictionary.length;
+            var numWords = dictionary["words"].length;
             var result = "";
             var wordsFound = 0;
             for (var i = 0; i < numWords; i++) {
-                if(contains(dictionary[i],input)) {
-                    result += "<a href='javascript:del(\""+dictionary[i]+"\");'>" + dictionary[i] + "</a><br/>";
+                if(contains(dictionary["words"][i]["letters"],input)) {
+                    result += "<a href=\"javascript:del(\'"+dictionary["words"][i]["display"].replace(/'/g,"\\\'")+"\');\">" + dictionary["words"][i]["display"] + "</a><br/>";
                     ++wordsFound;
                 }
             }
