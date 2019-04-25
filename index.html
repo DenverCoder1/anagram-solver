@@ -90,8 +90,8 @@
         }
 
         function solveAnagram() {
-            var input = document.getElementById("letters").value.toUpperCase().replace(/[^A-Z\*]/g,"").split('').sort().join('');
-            var remove = document.getElementById("remove").value.toUpperCase().replace(/[^A-Z\*]/g,"");
+            var input = document.getElementById("letters").value.toUpperCase().replace(/[^A-Z0-9\*]/g,"").split('').sort().join('');
+            var remove = document.getElementById("remove").value.toUpperCase().replace(/[^A-Z0-9\*]/g,"");
             var errors = "";
             for (var i = 0; i < remove.length; i++) {
                 if (input == (input = input.replace(remove[i],""))) {
