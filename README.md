@@ -1,2 +1,5 @@
 # anagram-solver
-Anagram solver to find words in multi-word anagrams. Includes Harry Potter word dictionary.
+
+Iterative anagram solver to find words in anagrams with multiple words.
+
+Includes 100k word dictionary, 8k word dictionary, and Dictionary based on Harry Potter.
